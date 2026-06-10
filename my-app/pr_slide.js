@@ -102,3 +102,21 @@ function assingLayerFuncionality(layer) {
 assingLayerFuncionality(visor);
 
 slider.addEventListener("input", () => map.render());
+
+/* transform: translateY(-50%); */
+console.log(
+  encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M288 128C288 110.3 273.7 96 256 96C238.3 96 224 110.3 224 128L224 512C224 529.7 238.3 544 256 544C273.7 544 288 529.7 288 512L288 128zM416 128C416 110.3 401.7 96 384 96C366.3 96 352 110.3 352 128L352 512C352 529.7 366.3 544 384 544C401.7 544 416 529.7 416 512L416 128z"/></svg>
+`),
+);
+
+const thumbIcon = document.getElementById("thumb-icon");
+slider.value = 50; // Valor inicial del slider
+thumbIcon.style.left = `${slider.value}%`; // Posición inicial del icono
+
+slider.addEventListener("input", (e) => {
+  console.log(slider.value);
+  const min = Number(slider.min) || 0;
+  const max = Number(slider.max) || 100;
+  const percentage = (Number(slider.value) - min) / (max - min);
+  thumbIcon.style.left = `${percentage * 100}%`;
+});

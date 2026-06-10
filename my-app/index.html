@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pruebas slide</title>
     <link rel="stylesheet" href="pr_slide.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
     <div id="map">
+      <div class="slider-container">
+        <input type="range" id="slider" />
+        <!-- <div id="thumb-icon">&#8741;</div> -->
+        <i id="thumb-icon" class="fa-solid fa-grip-lines-vertical"></i>
+      </div>
       <div class="maps-container">
         <h2>Mapas de fondo</h2>
         <ul id="maps-tree" class="maps-tree">
@@ -51,13 +57,6 @@
             Ocean
           </li>
         </ul>
-      </div>
-    </div>
-    <div>
-      <input type="range" id="slider" name="slider" />
-      <div class="btn-container">
-        <button id="base">Base</button>
-        <button id="layer">Capa</button>
       </div>
     </div>
     <script type="module" src="pr_slide.js"></script>
