@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pruebas slide</title>
+    <link rel="stylesheet" href="pr_slide.css" />
+  </head>
+  <body>
+    <div id="map">
+      <div class="maps-container">
+        <h2>Mapas de fondo</h2>
+        <ul id="maps-tree" class="maps-tree">
+          <li
+            class="map"
+            source="silme"
+            map-id="base_referencia:base_referencia"
+            style="
+              background-image: url(&quot;//ide.cime.es/test/thumbnails/base_ref.png&quot;);
+            "
+          >
+            Mapa base ide
+          </li>
+          <li
+            class="map"
+            source="osm"
+            style="
+              background-image: url(&quot;//ide.cime.es/test/thumbnails/base_ref.png&quot;);
+            "
+          >
+            OpenStreetMaps
+          </li>
+          <li
+            class="map"
+            source="maptiler"
+            map-id="backdrop-v4"
+            style="
+              background-image: url(&quot;//ide.cime.es/test/thumbnails/base_ref.png&quot;);
+            "
+          >
+            Backdrop
+          </li>
+          <li
+            class="map"
+            source="maptiler"
+            map-id="ocean-v4"
+            style="
+              background-image: url(&quot;//ide.cime.es/test/thumbnails/base_ref.png&quot;);
+            "
+          >
+            Ocean
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <input type="range" id="slider" name="slider" />
+      <div class="btn-container">
+        <button id="base">Base</button>
+        <button id="layer">Capa</button>
+      </div>
+    </div>
+    <script type="module" src="pr_slide.js"></script>
+  </body>
+</html>

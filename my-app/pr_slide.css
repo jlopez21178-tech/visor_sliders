@@ -1,0 +1,46 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#map {
+  height: 50vh;
+  width: 100%;
+}
+
+#slider {
+  width: 100%;
+}
+
+.maps-container {
+  position: fixed;
+  bottom: 0;
+  height: 300px;
+}
+
+.maps-tree {
+  display: flex;
+  list-style: none;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.map {
+  flex-basis: 30%;
+  min-width: 100px;
+  height: 100px;
+  cursor: pointer;
+  border-radius: 20px;
+  text-shadow: 0 0 2px white;
+
+  background-position: center;
+  background-size: cover;
+
+  display: flex;
+  justify-content: center;
+}
+
+.map:focus{
+  background-color: black;
+}
