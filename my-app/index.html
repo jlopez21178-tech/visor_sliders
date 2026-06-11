@@ -4,61 +4,62 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pruebas slide</title>
-    <link rel="stylesheet" href="pr_slide.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <!-- Link Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
   </head>
   <body>
     <div id="map">
+      <div id="search">
+        <a
+          href="http://ide.cime.es"
+          target="_blank"
+          aria-label="IDE Menorca"
+        ></a>
+      </div>
       <div class="slider-container">
         <input type="range" id="slider" />
-        <!-- <div id="thumb-icon">&#8741;</div> -->
         <i id="thumb-icon" class="fa-solid fa-grip-lines-vertical"></i>
       </div>
-      <div class="maps-container">
-        <h2>Mapas de fondo</h2>
-        <ul id="maps-tree" class="maps-tree">
-          <li
-            class="map"
-            source="silme"
-            map-id="base_referencia:base_referencia"
-            style="
-              background-image: url(&quot;//ide.cime.es/test/thumbnails/base_ref.png&quot;);
-            "
-          >
-            Mapa base ide
-          </li>
-          <li
-            class="map"
-            source="osm"
-            style="
-              background-image: url(&quot;//ide.cime.es/test/thumbnails/base_ref.png&quot;);
-            "
-          >
-            OpenStreetMaps
-          </li>
-          <li
-            class="map"
-            source="maptiler"
-            map-id="backdrop-v4"
-            style="
-              background-image: url(&quot;//ide.cime.es/test/thumbnails/base_ref.png&quot;);
-            "
-          >
-            Backdrop
-          </li>
-          <li
-            class="map"
-            source="maptiler"
-            map-id="ocean-v4"
-            style="
-              background-image: url(&quot;//ide.cime.es/test/thumbnails/base_ref.png&quot;);
-            "
-          >
-            Ocean
-          </li>
-        </ul>
+      <div id="map-list-container" class="map-list-container">
+        <div id="map-list">
+          <span>1990</span>
+          <span>2000</span>
+          <span>2004</span>
+          <span>2008</span>
+          <span>2024</span>
+        </div>
+        <div class="selector-container">
+          <input
+            type="range"
+            class="map-selector"
+            id="base-selector"
+            min="0"
+            max="4"
+            step="1"
+            value="0"
+          />
+          <i id="thumb-base" class="thumb fa-solid fa-circle"></i>
+          <input
+            type="range"
+            class="map-selector"
+            id="layer-selector"
+            min="0"
+            max="4"
+            step="1"
+            value="4"
+          />
+          <i id="thumb-layer" class="thumb fa-solid fa-circle"></i>
+        </div>
       </div>
     </div>
-    <script type="module" src="pr_slide.js"></script>
+    <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content" class="ol-popup-content"></div>
+    </div>
+    <script type="module" src="main.js"></script>
   </body>
 </html>
