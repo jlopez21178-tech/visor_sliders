@@ -1,5 +1,5 @@
 import "ol/ol.css";
-import { Map, Overlay, View } from "ol";
+import { Collection, Map, Overlay, View } from "ol";
 import { Tile } from "ol/layer";
 import { getRenderPixel } from "ol/render";
 import { OSM, TileWMS, XYZ } from "ol/source";
@@ -13,6 +13,8 @@ import {
   Zoom,
 } from "ol/control";
 import { toStringHDMS } from "ol/coordinate";
+import layerList from "./layers_list.json";
+layerList.sort((a, b) => Number(a.label) - Number(b.label));
 
 const mousePosition = new MousePosition({
   coordinateFormat: (coord) => {
@@ -34,19 +36,16 @@ const zoomToExtent = new ZoomToExtent({
 
 let base = new Tile({
   source: new TileWMS({
-    url: "//ide.cime.es/geoserver2/base_referencia/wms/",
-    params: { LAYERS: "base_referencia:base_referencia", TILED: true },
+    url: layerList[0].urlService,
+    params: { LAYERS: layerList[0].layerId, TILED: true },
   }),
 });
 
-let source = new XYZ({
-  url: "https://api.maptiler.com/maps/backdrop-v4/{z}/{x}/{y}.png?key=V1UJJmQhAy6fVv7O5N08",
-  maxZoom: 19,
-  tileSize: 512,
-});
-
 let visor = new Tile({
-  source,
+  source: new TileWMS({
+    url: layerList[layerList.length - 1].urlService,
+    params: { LAYERS: layerList[layerList.length - 1].layerId, TILED: true },
+  }),
 });
 
 const container = document.getElementById("popup");
@@ -76,49 +75,9 @@ const map = new Map({
     zoom: 12,
     center: [475000, 4850000],
   }),
-  layers: [base, visor],
+  layers: new Collection([base, visor]),
   overlays: [overlay],
 });
-
-// const mapsList = document.getElementById("maps-tree");
-// mapsList.addEventListener("click", (e) => {
-//   if (!e.target.getAttribute("source")) return;
-
-//   visor.un("prerender", onPrerender);
-//   visor.un("postrender", onPostrender);
-//   map.removeLayer(visor);
-
-//   switch (e.target.getAttribute("source")) {
-//     case "maptiler": {
-//       source = new XYZ({
-//         url: `https://api.maptiler.com/maps/${e.target.getAttribute("map-id")}/{z}/{x}/{y}.png?key=V1UJJmQhAy6fVv7O5N08`,
-//         maxZoom: 19,
-//         tileSize: 512,
-//       });
-//       break;
-//     }
-//     case "silme": {
-//       source = new TileWMS({
-//         url: "//ide.cime.es/geoserver2/base_referencia/wms/",
-//         params: { LAYERS: e.target.getAttribute("map-id"), TILED: true },
-//       });
-//       break;
-//     }
-//     case "osm": {
-//       source = new OSM();
-//       break;
-//     }
-//     default:
-//       return; // En caso de no haber un source valido no añade ninguna capa
-//   }
-
-//   visor = new Tile({
-//     source: source,
-//   });
-
-//   assingLayerFuncionality(visor);
-//   map.addLayer(visor);
-// });
 
 // Funcionalidad para el slider separador de mapas
 const slider = document.getElementById("slider");
@@ -163,14 +122,6 @@ const thumbLayer = document.getElementById("thumb-layer");
 const thumbIcon = document.getElementById("thumb-icon");
 const viewport = map.getViewport();
 
-slider.value = 50; // Valor inicial del slider
-
-// function thumbPosition(slider) {
-//   const min = slider.min !== "" ? slider.min : 0;
-//   const max = slider.max !== "" ? slider.max : 100;
-//   return ((Number(slider.value) - min) / (max - min)) * 100;
-// }
-
 function thumbPosition(slider, thumbSize = 20) {
   const min = slider.min !== "" ? Number(slider.min) : 0;
   const max = slider.max !== "" ? Number(slider.max) : 100;
@@ -183,18 +134,22 @@ function thumbPosition(slider, thumbSize = 20) {
 
   if (rect.width === 0) return ratio * 100; // fallback si aún no está pintado
 
+  // Arreglo del posicionamiento del thumb para que no sobrepase el slider
   const trackWidth = rect.width - thumbSize;
   const offsetPx = thumbSize / 2 + ratio * trackWidth;
   return (offsetPx / rect.width) * 100;
 }
 
-function incializarSlider(slider, thumb, moveMap = false) {
+function funcionalidadSlider(slider, thumb, moveMap = false) {
   let isDragging = false;
   thumb.style.left = `${thumbPosition(slider)}%`; // Posición inicial del icono
 
   slider.addEventListener("input", (e) => {
     if (!isDragging) return; // Solo actualiza la posición del icono si se está arrastrando el thumb
-    thumb.style.left = `${thumbPosition(slider)}%`;
+
+    if (slider.id !== "slider") changeLayer(slider); // En caso de no ser slider principal cambiamos los mapas
+
+    thumb.style.left = `${thumbPosition(slider)}%`; // Actualizacion del thumb
   });
 
   slider.addEventListener("pointerdown", (e) => {
@@ -207,6 +162,7 @@ function incializarSlider(slider, thumb, moveMap = false) {
       e.preventDefault();
       if (moveMap) viewport.dispatchEvent(new PointerEvent("pointerdown", e));
     } else {
+      slider.style.zIndex = 5;
       isDragging = true;
     }
   });
@@ -218,6 +174,7 @@ function incializarSlider(slider, thumb, moveMap = false) {
   slider.addEventListener("pointerup", (e) => {
     if (!isDragging) viewport.dispatchEvent(new PointerEvent("pointerup", e));
     isDragging = false;
+    slider.style.zIndex = 3;
   });
 
   //// Permitir hacer zoom con el raton aun encima del slider
@@ -240,9 +197,57 @@ document.getElementById("map-list-container").addEventListener(
   { passive: false },
 );
 
-incializarSlider(slider, thumbIcon, true);
-incializarSlider(baseSelector, thumbBase);
-incializarSlider(layerSelector, thumbLayer);
+function setLayerLabels() {
+  const mapList = document.getElementById("map-list");
+  console.log(layerList.length);
+  baseSelector.setAttribute("max", layerList.length - 1);
+  layerSelector.setAttribute("max", layerList.length - 1);
+  layerSelector.setAttribute("value", layerList.length - 1);
+  for (let layer of layerList) {
+    mapList.innerHTML += `<span>${layer.label}</span>`;
+  }
+}
+
+function initSliders() {
+  setLayerLabels();
+  funcionalidadSlider(slider, thumbIcon, true);
+  funcionalidadSlider(baseSelector, thumbBase);
+  funcionalidadSlider(layerSelector, thumbLayer);
+}
+
+initSliders();
+
+function changeLayer(slider) {
+  const layer = layerList[slider.value];
+  const source = new TileWMS({
+    url: layer.urlService,
+    params: { LAYERS: layer.layerId, TILED: true },
+  });
+
+  if (slider.id === "base-selector") {
+    map.getLayers().remove(base);
+    base = new Tile({ source });
+    map.getLayers().insertAt(0, base);
+  } else {
+    visor.un("prerender", onPrerender);
+    visor.un("postrender", onPostrender);
+    map.getLayers().pop();
+    visor = new Tile({ source });
+    map.getLayers().push(visor);
+    assingLayerFuncionality(visor);
+  }
+}
+
+//// Mostrar y ocultar slider de mapas
+const dropdown = document.getElementById("map-list-dropdown");
+dropdown.onclick = function () {
+  dropdown.classList.toggle("fa-angle-down");
+  dropdown.classList.toggle("fa-angle-up");
+  dropdown.classList.toggle("dropdown-active");
+  const mapContainer = document.getElementById("map-list-container");
+  mapContainer.classList.toggle("hidden");
+};
+
 // Funcionalidad controles OpenLayers de mapa
 //// Cambiar icono del zoom-extent por una casa
 document.querySelector(".ol-zoom-extent button").innerHTML =
@@ -259,15 +264,21 @@ fullScreen.addEventListener("click", () => {
 });
 
 // Funcionalidad popup
-
 //// Cerrar el popup al hacer click
-closer.onclick = function () {
+let stopPopup = false;
+
+closer.onclick = function (e) {
+  stopPopup = true;
+  e.stopPropagation();
   overlay.setPosition(undefined);
   closer.blur();
+  setTimeout(() => (stopPopup = false), 300);
   return false;
 };
 
 map.on("singleclick", function (e) {
+  if (stopPopup) return; // Ignora el click si vino de cerrar el popup
+
   const coordinate = e.coordinate;
   const hdms = toStringHDMS(toLonLat(coordinate));
 
