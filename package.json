@@ -1,0 +1,19 @@
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.11"
+  },
+  "dependencies": {
+    "animejs": "^4.4.1",
+    "ol": "^10.9.0"
+  },
+  "allowScripts": {
+    "animejs@4.4.1": true
+  }
+}

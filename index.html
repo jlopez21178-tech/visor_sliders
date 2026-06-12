@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pruebas slide</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Link Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div id="map">
+      <div id="search">
+        <a
+          href="http://ide.cime.es"
+          target="_blank"
+          aria-label="IDE Menorca"
+        ></a>
+      </div>
+      <div class="slider-container">
+        <input type="range" id="slider" />
+        <i id="thumb-icon" class="fa-solid fa-grip-lines-vertical"></i>
+      </div>
+      <i
+        id="map-list-dropdown"
+        class="fa-solid fa-angle-down dropdown-active"
+      ></i>
+      <div id="map-list-container" class="map-list-container">
+        <div id="map-list"></div>
+        <div class="selector-container">
+          <input
+            type="range"
+            class="map-selector"
+            id="base-selector"
+            min="0"
+            step="1"
+            value="0"
+          />
+          <i id="thumb-base" class="thumb fa-solid fa-circle"></i>
+          <input
+            id="layer-selector"
+            class="map-selector"
+            type="range"
+            min="0"
+            step="1"
+          />
+          <i id="thumb-layer" class="thumb fa-regular fa-circle"></i>
+        </div>
+      </div>
+    </div>
+    <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content" class="ol-popup-content"></div>
+    </div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
