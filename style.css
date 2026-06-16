@@ -52,6 +52,7 @@ body {
   background-position: center;
   background-color: var(--c-control-icon);
   border-radius: var(--control-border-radius);
+  box-shadow: 0 0 10px var(--c-control-bg);
 }
 
 /* Barra de cargando */
