@@ -5,7 +5,8 @@
     "layers": [
       {
         "urlService": "https://ovc.catastro.meh.es/Cartografia/WMS/ServidorWMS.aspx",
-        "layerId": "TEXTOS"
+        "layerId": "TEXTOS",
+        "server": "geoserver"
       }
     ]
   },
@@ -16,17 +17,20 @@
       {
         "urlService": "https://ideib.caib.es/geoserveis/services/public/GOIB_SolVacant_IB/MapServer/WMSServer/",
         "layerId": "0",
-        "year": 2000
+        "year": 2000,
+        "server": "geoserver"
       },
       {
         "urlService": "https://ideib.caib.es/geoserveis/services/public/GOIB_SolVacant_IB/MapServer/WMSServer/",
         "layerId": "1",
-        "year": 2010
+        "year": 2010,
+        "server": "geoserver"
       },
       {
         "urlService": "https://ideib.caib.es/geoserveis/services/public/GOIB_SolVacant_IB/MapServer/WMSServer/",
         "layerId": "2",
-        "year": 2015
+        "year": 2015,
+        "server": "geoserver"
       }
     ]
   },
@@ -36,7 +40,8 @@
     "layers": [
       {
         "urlService": "https://ideib.caib.es/geoserveis/services/public/GOIB_RiscIncendi_IB/MapServer/WMSServer/",
-        "layerId": "1"
+        "layerId": "1",
+        "server": "geoserver"
       }
     ]
   }

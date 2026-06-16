@@ -18,6 +18,10 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/rizmyabdulla/fontawesome-pro@main/releases/v7.2.0/css/fontawesome.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/rizmyabdulla/fontawesome-pro@main/releases/v7.2.0/css/chisel-regular.css"
+    />
   </head>
   <body>
     <div id="map">
@@ -32,8 +36,9 @@
       <div id="ol-control-container">
         <div id="caption-container" class="ol-control ol-caption">
           <button
-            id="caption-btn" title="Leyenda"
-            class="fa-regular fa-square-info ol-caption"
+            id="caption-btn"
+            title="Leyenda"
+            class="fa-regular fa-square-info"
           ></button>
         </div>
       </div>
@@ -72,11 +77,12 @@
         class="fa-regular fa-arrow-right-to-line fa-lg"
       ></i>
       <div id="group-layer-container" class="group-layer-container"></div>
-      <!-- <div id="caption">aloha</div> -->
+      <div id="caption"><h2>Leyenda</h2></div>
     </div>
     <div id="popup" class="ol-popup">
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content" class="ol-popup-content"></div>
+      <div id="pop-up-info"></div>
     </div>
     <div id="error" class="error"></div>
     <script type="module" src="./main.js"></script>

@@ -13,9 +13,9 @@ import {
   Zoom,
 } from "ol/control";
 import { toStringHDMS } from "ol/coordinate";
-import mapList from "./map-list.json";
+import mapList from "../map-list.json";
 mapList.sort((a, b) => Number(a.label) - Number(b.label));
-import layerList from "./layer-list.json";
+import layerList from "../layer-list.json";
 layerList.sort((a, b) => a.label.localeCompare(b.label));
 
 const mousePosition = new MousePosition({
@@ -79,7 +79,6 @@ let base = new Tile({
     params: { LAYERS: mapList[0].layerId, TILED: true },
   }),
 });
-
 loadingListeners(base.getSource());
 
 let visor = new Tile({
@@ -88,40 +87,16 @@ let visor = new Tile({
     params: { LAYERS: mapList[mapList.length - 1].layerId, TILED: true },
   }),
 });
-
 loadingListeners(visor.getSource());
 
 const container = document.getElementById("popup");
 const content = document.getElementById("popup-content");
 const closer = document.getElementById("popup-closer");
 
-const overlay = new Overlay({
-  element: container,
-  autoPan: {
-    animation: {
-      duration: 250,
-    },
-  },
-  // Permite que el raton haga zoom aun encima del popup
-  stopEvent: false,
-});
 
-const map = new Map({
-  target: "map",
-  controls: defaultCtrl.extend([
-    new ScaleLine(),
-    new FullScreen(),
-    mousePosition,
-    zoomToExtent,
-  ]),
-  view: new View({
-    zoom: 12,
-    center: [475000, 4850000],
-    minZoom: 11,
-  }),
-  layers: new Collection([base, visor]),
-  overlays: [overlay],
-});
+
+
+
 
 // Funcionalidad para el slider separador de mapas
 const slider = document.getElementById("slider");
@@ -310,7 +285,7 @@ document.querySelector(".ol-zoom-extent button").innerHTML =
 function changeActiveBackground(btn) {
   btn.classList.toggle("ol-btn-active");
   btn.style.background = btn.classList.contains("ol-btn-active")
-    ? "var(--color-control-icon-active) !important"
+    ? "var(--c-control-icon-active) !important"
     : "";
 }
 const fullScreen = document.querySelector(".ol-full-screen > button");
@@ -318,9 +293,15 @@ fullScreen.addEventListener("click", () => changeActiveBackground(fullScreen));
 
 //// Controles de la leyenda
 const captionBtn = document.getElementById("caption-btn");
+const caption = document.getElementById("caption");
 
 captionBtn.addEventListener("click", () => {
   changeActiveBackground(captionBtn);
+  caption.classList.toggle("active");
+  captionBtn.classList = caption.classList.contains("active")
+    ? "fa-chisel fa-regular fa-xmark"
+    : "fa-regular fa-square-info";
+  olBtnContainer.classList.toggle("active");
 });
 
 // Funcionalidad popup
@@ -336,14 +317,69 @@ closer.onclick = function (e) {
   return false;
 };
 
-map.on("singleclick", function (e) {
+map.on("singleclick", async function (e) {
   if (stopPopup) return; // Ignora el click si vino de cerrar el popup
 
-  const coordinate = e.coordinate;
-  const hdms = toStringHDMS(toLonLat(coordinate));
+  const [lon, lat] = toLonLat(e.coordinate);
+  content.innerHTML = "<code>Cargando...</code>";
+  overlay.setPosition(e.coordinate);
 
-  content.innerHTML = `<code>${hdms}</code>`;
-  overlay.setPosition(coordinate);
+  // setTimeout(() => overlay.setPosition(e.coordinate), 1000);
+
+  const response = await fetch(
+    `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`,
+  );
+  const data = await response.json();
+  const elevation = data.elevation[0];
+  content.innerHTML = `<code>Lon: ${lon.toFixed(4)} Lat: ${lat.toFixed(4)} Alt: ${elevation}m</code>`;
+  overlay.setPosition(e.coordinate);
+
+  const info = document.getElementById("popup-info");
+  info.innerHTML = "";
+  const viewResolution = view.getResolution();
+
+  const inUseLayers = map.getLayers().getArray().slice(2);
+  for (let layer of inUseLayers) {
+    const source = layer.getSource();
+    if (!(source instanceof TileWMS)) continue;
+
+    const url = source.getFeatureInfoUrl(
+      e.coordinate,
+      viewResolution,
+      "EPSG:3857",
+      { INFO_FORMAT: "text/html" },
+    );
+
+    if (url) {
+      fetch(url)
+        .then((response) => response.text())
+        .then((html) => {
+          info.innerHTML = html;
+          try {
+            // Coje el ultimo titulo añadido
+            const title = info.children[info.children.length - 2];
+            if (!title) return;
+            const text = title.textContent.split(":")[1];
+            title.textContent = text.slice(2, text.length - 1);
+
+            overlay.setPosition(e.coordinate);
+          } catch (TypeError) {
+            // Escondemos el error, porque no es importante.
+            // Ocurre cuando clicamos en un lugar sin informacion en un layer.
+          }
+        });
+    }
+  }
+});
+
+map.on("pointermove", function (e) {
+  if (e.dragging) return;
+  const inUseLayers = map.getLayers().getArray().slice(2);
+  const hit = inUseLayers.some((layer) => {
+    const data = layer.getData(e.pixel);
+    return data && data[3] > 0;
+  });
+  map.getTargetElement().style.cursor = hit ? "pointer" : "";
 });
 
 // Funcionalidad capas (group-layer)
@@ -400,9 +436,11 @@ function setLayer(layers) {
     const source = new TileWMS({
       url: layer.urlService,
       params: { LAYERS: layer.layerId, TILED: true },
+      serverType: layer.server,
+      crossOrigin: layer.crossOrigin || "anonymous",
     });
     loadingListeners(source);
-    map.getLayers().push(new Tile({ source: source }));
+    map.getLayers().push(new Tile({ source }));
   }
 }
 
