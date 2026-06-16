@@ -13,10 +13,13 @@ import {
   Zoom,
 } from "ol/control";
 import { toStringHDMS } from "ol/coordinate";
-import layerList from "./layers_list.json";
-layerList.sort((a, b) => Number(a.label) - Number(b.label));
+import mapList from "./map-list.json";
+mapList.sort((a, b) => Number(a.label) - Number(b.label));
+import layerList from "./layer-list.json";
+layerList.sort((a, b) => a.label.localeCompare(b.label));
 
 const mousePosition = new MousePosition({
+  placeholder: "Ponga el raton sobre el mapa para ver las coordenadas",
   coordinateFormat: (coord) => {
     const lonLat = toLonLat(coord);
     return `X: ${lonLat[0].toFixed(4)}, Y: ${lonLat[1].toFixed(4)}`;
@@ -34,19 +37,59 @@ const zoomToExtent = new ZoomToExtent({
   label: "",
 });
 
+const defaultCtrl = new defaultControls({
+  zoomOptions: {
+    zoomInTipLabel: "Acercar",
+    zoomOutTipLabel: "Alejar",
+  },
+});
+
+// Funcionalidad rueda de carga
+const loader = document.getElementById("loader");
+let tilesLoading = 0;
+function loadingListeners(source) {
+  source.on("tileloadstart", () => {
+    tilesLoading++;
+    showLoader();
+  });
+
+  source.on("tileloadend", () => {
+    tilesLoading--;
+    if (tilesLoading == 0) hideLoader();
+  });
+
+  source.on("tileloaderror", () => {
+    tilesLoading--;
+    if (tilesLoading == 0) hideLoader();
+    showError();
+  });
+}
+
+function showLoader() {
+  loader.classList.add("active");
+}
+
+function hideLoader() {
+  loader.classList.remove("active");
+}
+
 let base = new Tile({
   source: new TileWMS({
-    url: layerList[0].urlService,
-    params: { LAYERS: layerList[0].layerId, TILED: true },
+    url: mapList[0].urlService,
+    params: { LAYERS: mapList[0].layerId, TILED: true },
   }),
 });
 
+loadingListeners(base.getSource());
+
 let visor = new Tile({
   source: new TileWMS({
-    url: layerList[layerList.length - 1].urlService,
-    params: { LAYERS: layerList[layerList.length - 1].layerId, TILED: true },
+    url: mapList[mapList.length - 1].urlService,
+    params: { LAYERS: mapList[mapList.length - 1].layerId, TILED: true },
   }),
 });
+
+loadingListeners(visor.getSource());
 
 const container = document.getElementById("popup");
 const content = document.getElementById("popup-content");
@@ -65,7 +108,7 @@ const overlay = new Overlay({
 
 const map = new Map({
   target: "map",
-  controls: defaultControls().extend([
+  controls: defaultCtrl.extend([
     new ScaleLine(),
     new FullScreen(),
     mousePosition,
@@ -74,6 +117,7 @@ const map = new Map({
   view: new View({
     zoom: 12,
     center: [475000, 4850000],
+    minZoom: 11,
   }),
   layers: new Collection([base, visor]),
   overlays: [overlay],
@@ -123,8 +167,8 @@ const thumbIcon = document.getElementById("thumb-icon");
 const viewport = map.getViewport();
 
 function thumbPosition(slider, thumbSize = 20) {
-  const min = slider.min !== "" ? Number(slider.min) : 0;
-  const max = slider.max !== "" ? Number(slider.max) : 100;
+  const min = Number(slider.min) || 0;
+  const max = Number(slider.max) || 100;
 
   if (slider.id === "slider")
     return ((Number(slider.value) - min) / (max - min)) * 100;
@@ -140,14 +184,14 @@ function thumbPosition(slider, thumbSize = 20) {
   return (offsetPx / rect.width) * 100;
 }
 
-function funcionalidadSlider(slider, thumb, moveMap = false) {
+function sliderFunctionality(slider, thumb, moveMap = false) {
   let isDragging = false;
   thumb.style.left = `${thumbPosition(slider)}%`; // Posición inicial del icono
 
   slider.addEventListener("input", (e) => {
     if (!isDragging) return; // Solo actualiza la posición del icono si se está arrastrando el thumb
 
-    if (slider.id !== "slider") changeLayer(slider); // En caso de no ser slider principal cambiamos los mapas
+    if (slider.id !== "slider") changeMap(slider); // En caso de no ser slider principal cambiamos los mapas
 
     thumb.style.left = `${thumbPosition(slider)}%`; // Actualizacion del thumb
   });
@@ -198,27 +242,27 @@ document.getElementById("map-list-container").addEventListener(
 );
 
 function setLayerLabels() {
-  const mapList = document.getElementById("map-list");
-  console.log(layerList.length);
-  baseSelector.setAttribute("max", layerList.length - 1);
-  layerSelector.setAttribute("max", layerList.length - 1);
-  layerSelector.setAttribute("value", layerList.length - 1);
-  for (let layer of layerList) {
-    mapList.innerHTML += `<span>${layer.label}</span>`;
+  const map = document.getElementById("map-list");
+  baseSelector.setAttribute("max", mapList.length - 1);
+  layerSelector.setAttribute("max", mapList.length - 1);
+  layerSelector.value = mapList.length - 1;
+  for (let layer of mapList) {
+    map.innerHTML += `<span>${layer.label}</span>`;
   }
 }
 
 function initSliders() {
   setLayerLabels();
-  funcionalidadSlider(slider, thumbIcon, true);
-  funcionalidadSlider(baseSelector, thumbBase);
-  funcionalidadSlider(layerSelector, thumbLayer);
+  sliderFunctionality(slider, thumbIcon, true);
+  sliderFunctionality(baseSelector, thumbBase);
+  sliderFunctionality(layerSelector, thumbLayer);
 }
 
 initSliders();
 
-function changeLayer(slider) {
-  const layer = layerList[slider.value];
+function changeMap(slider) {
+  const layer = mapList[slider.value];
+  tilesLoading = 0;
   const source = new TileWMS({
     url: layer.urlService,
     params: { LAYERS: layer.layerId, TILED: true },
@@ -231,11 +275,12 @@ function changeLayer(slider) {
   } else {
     visor.un("prerender", onPrerender);
     visor.un("postrender", onPostrender);
-    map.getLayers().pop();
+    map.getLayers().remove(visor);
     visor = new Tile({ source });
-    map.getLayers().push(visor);
+    map.getLayers().insertAt(1, visor);
     assingLayerFuncionality(visor);
   }
+  loadingListeners(source);
 }
 
 //// Mostrar y ocultar slider de mapas
@@ -249,18 +294,33 @@ dropdown.onclick = function () {
 };
 
 // Funcionalidad controles OpenLayers de mapa
+//// Meto los botones de op en un contenedor custom para mas facilidad con css
+const olBtnContainer = document.getElementById("ol-control-container");
+const olControlBtn = document.querySelectorAll(".ol-control");
+const captionBtnDiv = document.getElementById("caption-container");
+
+for (let btn of olControlBtn) {
+  olBtnContainer.insertBefore(btn, captionBtnDiv);
+}
+
 //// Cambiar icono del zoom-extent por una casa
 document.querySelector(".ol-zoom-extent button").innerHTML =
   `<svg class="ol-zoom-extent-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M277.8 8.6c-12.3-11.4-31.3-11.4-43.5 0l-224 208c-9.6 9-12.8 22.9-8 35.1S18.8 272 32 272l16 0 0 176c0 35.3 28.7 64 64 64l288 0c35.3 0 64-28.7 64-64l0-176 16 0c13.2 0 25-8.1 29.8-20.3s1.6-26.2-8-35.1l-224-208zM240 320l32 0c26.5 0 48 21.5 48 48l0 96-128 0 0-96c0-26.5 21.5-48 48-48z"/></svg>`;
 
+function changeActiveBackground(btn) {
+  btn.classList.toggle("ol-btn-active");
+  btn.style.background = btn.classList.contains("ol-btn-active")
+    ? "var(--color-control-icon-active) !important"
+    : "";
+}
 const fullScreen = document.querySelector(".ol-full-screen > button");
+fullScreen.addEventListener("click", () => changeActiveBackground(fullScreen));
 
-fullScreen.addEventListener("click", () => {
-  if (fullScreen.hasAttribute("id")) {
-    fullScreen.removeAttribute("id");
-  } else {
-    fullScreen.id = "ol-full-screen-active";
-  }
+//// Controles de la leyenda
+const captionBtn = document.getElementById("caption-btn");
+
+captionBtn.addEventListener("click", () => {
+  changeActiveBackground(captionBtn);
 });
 
 // Funcionalidad popup
@@ -285,3 +345,76 @@ map.on("singleclick", function (e) {
   content.innerHTML = `<code>${hdms}</code>`;
   overlay.setPosition(coordinate);
 });
+
+// Funcionalidad capas (group-layer)
+const glContainer = document.getElementById("group-layer-container");
+const glBtn = document.getElementById("group-layer-btn");
+
+glBtn.addEventListener("click", () => {
+  glBtn.classList.toggle("fa-layer-group");
+  glBtn.classList.toggle("fa-arrow-right-to-line");
+  glBtn.classList.toggle("gl-inactive");
+  glContainer.classList.toggle("gl-inactive");
+});
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+const fragment = document.createDocumentFragment();
+
+for (let layer of layerList) {
+  const li = document.createElement("li");
+  li.id = layer.id;
+  li.className = "group-layer";
+  li.innerHTML = `${capitalize(layer.label)}<i class="fa-light fa-square"></i>`;
+  fragment.appendChild(li);
+}
+glContainer.appendChild(fragment);
+
+glContainer.addEventListener("click", (e) => {
+  const li = e.target.closest(".group-layer"); // Li más cercano al click
+  if (!li) return;
+
+  if (!li.children[0].classList.contains("fa-square-check")) {
+    document.querySelectorAll(".group-layer").forEach((lay) => {
+      lay.children[0].classList = "fa-light fa-square";
+    });
+    changeLayer(li);
+  } else {
+    clearLayers();
+    li.children[0].classList = "fa-light fa-square";
+  }
+});
+
+function changeLayer(layer) {
+  const found = layerList.find((l) => l.id === layer.id);
+  if (found) setLayer(found.layers);
+  layer.children[0].classList = "fa-light fa-square-check";
+}
+
+function setLayer(layers) {
+  if (map.getLayers().getLength() > 2) clearLayers();
+
+  for (let layer of layers) {
+    const source = new TileWMS({
+      url: layer.urlService,
+      params: { LAYERS: layer.layerId, TILED: true },
+    });
+    loadingListeners(source);
+    map.getLayers().push(new Tile({ source: source }));
+  }
+}
+
+//// Quita todas las capas menos las dos primeras, que son la base y el visor
+function clearLayers() {
+  for (let i = map.getLayers().getLength() - 1; i > 1; i--) {
+    map.getLayers().pop();
+  }
+}
+
+// Mostrar mensaje en caso de que algo vaya mal
+function showError() {
+  const error = document.getElementById("error");
+  // TODO
+}

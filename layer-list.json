@@ -1,0 +1,43 @@
+[
+  {
+    "label": "noms",
+    "id": "noms",
+    "layers": [
+      {
+        "urlService": "https://ovc.catastro.meh.es/Cartografia/WMS/ServidorWMS.aspx",
+        "layerId": "TEXTOS"
+      }
+    ]
+  },
+  {
+    "label": "Sol vacant",
+    "id": "sol_vacant",
+    "layers": [
+      {
+        "urlService": "https://ideib.caib.es/geoserveis/services/public/GOIB_SolVacant_IB/MapServer/WMSServer/",
+        "layerId": "0",
+        "year": 2000
+      },
+      {
+        "urlService": "https://ideib.caib.es/geoserveis/services/public/GOIB_SolVacant_IB/MapServer/WMSServer/",
+        "layerId": "1",
+        "year": 2010
+      },
+      {
+        "urlService": "https://ideib.caib.es/geoserveis/services/public/GOIB_SolVacant_IB/MapServer/WMSServer/",
+        "layerId": "2",
+        "year": 2015
+      }
+    ]
+  },
+  {
+    "label": "Alt risc d'incendis",
+    "id": "alt_risc_incendis",
+    "layers": [
+      {
+        "urlService": "https://ideib.caib.es/geoserveis/services/public/GOIB_RiscIncendi_IB/MapServer/WMSServer/",
+        "layerId": "1"
+      }
+    ]
+  }
+]

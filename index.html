@@ -10,9 +10,18 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/rizmyabdulla/fontawesome-pro@main/releases/v7.2.0/css/regular.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/rizmyabdulla/fontawesome-pro@main/releases/v7.2.0/css/fontawesome.css"
+    />
   </head>
   <body>
     <div id="map">
+      <i id="loader" class="fa-regular fa-loader fa-2x"></i>
       <div id="search">
         <a
           href="http://ide.cime.es"
@@ -20,9 +29,17 @@
           aria-label="IDE Menorca"
         ></a>
       </div>
+      <div id="ol-control-container">
+        <div id="caption-container" class="ol-control ol-caption">
+          <button
+            id="caption-btn" title="Leyenda"
+            class="fa-regular fa-square-info ol-caption"
+          ></button>
+        </div>
+      </div>
       <div class="slider-container">
         <input type="range" id="slider" />
-        <i id="thumb-icon" class="fa-solid fa-grip-lines-vertical"></i>
+        <i id="thumb-icon" class="fa-solid fa-grip-lines-vertical fa-lg"></i>
       </div>
       <i
         id="map-list-dropdown"
@@ -50,11 +67,18 @@
           <i id="thumb-layer" class="thumb fa-regular fa-circle"></i>
         </div>
       </div>
+      <i
+        id="group-layer-btn"
+        class="fa-regular fa-arrow-right-to-line fa-lg"
+      ></i>
+      <div id="group-layer-container" class="group-layer-container"></div>
+      <!-- <div id="caption">aloha</div> -->
     </div>
     <div id="popup" class="ol-popup">
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content" class="ol-popup-content"></div>
     </div>
+    <div id="error" class="error"></div>
     <script type="module" src="./main.js"></script>
   </body>
 </html>
