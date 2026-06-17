@@ -1,10 +1,9 @@
-import { map, base, visor, setBase, setVisor } from "./map.js";
+import { map, base, visor, setBase, setVisor, mapsList } from "./map.js";
 import { slider } from "./sliders.js";
 import { getRenderPixel } from "ol/render.js";
 import { Tile } from "ol/layer";
 import { TileWMS } from "ol/source.js";
 import { loadingListeners, setTilesLoading } from "./controls.js";
-import { mapsList } from "./map.js";
 import layerList from "../layer-list.json";
 layerList.sort((a, b) => a.label.localeCompare(b.label));
 
@@ -35,8 +34,6 @@ export function assingLayerFuncionality(layer) {
   layer.on("prerender", onPrerender);
   layer.on("postrender", onPostrender);
 }
-
-slider.addEventListener("input", () => map.render());
 
 // Funcionalidad capas (group-layer)
 const glContainer = document.getElementById("group-layer-container");
@@ -128,4 +125,34 @@ export function changeMap(slider) {
     assingLayerFuncionality(visor);
   }
   loadingListeners(source);
+}
+
+function getActiveLayer() {
+  const groupLayer = document.querySelectorAll(".group-layer");
+  return;
+  groupLayer.some((gl) =>
+    gl.children[0].classList.containes("fa-square-check"),
+  );
+}
+
+// Cojer la leyenda del mapa y añadirla al contenedor
+export function getLegend() {
+  const element = getActiveLayer();
+  console.log(element);
+
+  const legend = document.getElementById("legend");
+  legend.innerHTML = ""; // Reiniciamos la leyenda para que no muestre las leyendas anteriores
+
+  let i = 0; // Contador para conseguir el texto de la respectiva leyenda en caso de ser necesario
+  for (let layer of map.getLayers().getArray().slice(2)) {
+    const source = layer.getSource();
+    const url = source.urls[0];
+
+    const div = document.createElement("div");
+    div.innerHTML = source.g;
+    const img = document.createElement("img");
+    img.src = `${url}wms?SERVICE=wms&REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=${source.params_.LAYERS}`;
+
+    legend.appendChild(img);
+  }
 }

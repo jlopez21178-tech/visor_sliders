@@ -1,10 +1,12 @@
+import { getLegend } from "./layers";
+
 // Meto los botones de op en un contenedor custom para mas facilidad con css
 const olBtnContainer = document.getElementById("ol-control-container");
 const olControlBtn = document.querySelectorAll(".ol-control");
-const captionBtnDiv = document.getElementById("caption-container");
+const legendBtnDiv = document.getElementById("legend-btn-container");
 
 for (let btn of olControlBtn) {
-  olBtnContainer.insertBefore(btn, captionBtnDiv);
+  olBtnContainer.insertBefore(btn, legendBtnDiv);
 }
 
 // Cambiar icono del zoom-extent por una casa
@@ -22,18 +24,21 @@ const fullScreen = document.querySelector(".ol-full-screen > button");
 fullScreen.addEventListener("click", () => changeActiveBackground(fullScreen));
 
 // Controles de la leyenda
-const captionBtn = document.getElementById("caption-btn");
-const caption = document.getElementById("caption");
+const legendBtn = document.getElementById("legend-btn");
+const legendContainer = document.getElementById("legend-container");
 
-captionBtn.addEventListener("click", () => {
-  caption.classList.toggle("active");
-  captionBtn.classList = caption.classList.contains("active")
+legendBtn.addEventListener("click", () => {
+  legendContainer.classList.toggle("active");
+  // Cambiar el icono
+  legendBtn.classList = legendContainer.classList.contains("active")
     ? "fa-chisel fa-regular fa-xmark active"
     : "fa-regular fa-square-info";
-  captionBtn.style.background = captionBtn.classList.contains("active")
+  // Cambiar el background
+  legendBtn.style.background = legendBtn.classList.contains("active")
     ? "var(--c-control-icon-active) !important"
     : "";
   olBtnContainer.classList.toggle("active");
+  getLegend();
 });
 
 // Funcionalidad rueda de carga

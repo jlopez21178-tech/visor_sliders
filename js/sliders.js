@@ -12,6 +12,7 @@ const thumbLayer = document.getElementById("thumb-layer");
 const thumbIcon = document.getElementById("thumb-icon");
 const viewport = map.getViewport();
 export const slider = document.getElementById("slider");
+slider.addEventListener("input", () => map.render());
 
 function thumbPosition(slider, thumbSize = 20) {
   const min = Number(slider.min) || 0;

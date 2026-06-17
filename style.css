@@ -241,7 +241,7 @@ body {
   font-size: var(--control-font-size) !important;
 }
 
-#caption {
+#legend-container {
   position: absolute;
   z-index: 4;
   top: calc(var(--logo-height) + var(--ol-gap) * 2);
@@ -255,12 +255,16 @@ body {
   box-shadow: 0 5px 10px var(--c-control-icon-bg);
 }
 
-#caption.active {
+#legend-container.active {
   transform: translateX(0);
 }
 
-#caption h2 {
+#legend-container h2 {
   border-bottom: 1px solid var(--c-icon-slider-border);
+}
+
+#legend {
+  padding-top: 10px;
 }
 /* Map selector style*/
 

@@ -23,8 +23,6 @@ map.on("singleclick", async function (e) {
   content.innerHTML = "<code>Cargando...</code>";
   overlay.setPosition(e.coordinate);
 
-  // setTimeout(() => overlay.setPosition(e.coordinate), 1000);
-
   const response = await fetch(
     `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`,
   );
@@ -54,18 +52,14 @@ map.on("singleclick", async function (e) {
         .then((response) => response.text())
         .then((html) => {
           info.innerHTML = html;
-          try {
-            // Coje el ultimo titulo añadido
-            const title = info.children[info.children.length - 2];
-            if (!title) return;
-            const text = title.textContent.split(":")[1];
-            title.textContent = text.slice(2, text.length - 1);
+          // Coje el ultimo titulo añadido
+          const title = info.children[info.children.length - 2];
+          if (!title) return;
+          const text = title.textContent.split(":")[1];
+          if (!text) return;
+          title.textContent = text.slice(2, text.length - 1);
 
-            overlay.setPosition(e.coordinate);
-          } catch (TypeError) {
-            // Escondemos el error, porque no es importante.
-            // Ocurre cuando clicamos en un lugar sin informacion en un layer.
-          }
+          overlay.setPosition(e.coordinate);
         });
     }
   }
