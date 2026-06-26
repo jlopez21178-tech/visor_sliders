@@ -10,7 +10,7 @@
     "vite": "^7.1.11"
   },
   "dependencies": {
-    "animejs": "^4.4.1",
+    "animejs": "^4.5.0",
     "ol": "^10.9.0"
   },
   "allowScripts": {
